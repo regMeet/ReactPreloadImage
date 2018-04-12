@@ -60,6 +60,21 @@ class ImagePreload extends PureComponent {
     });
   }
 
+  // throws CORS issue
+  preloadImage2(imageSrc) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        console.log('base 64: ', reader.result);
+      }
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.open('GET', imageSrc);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+
   render() {
     const {
       status,
