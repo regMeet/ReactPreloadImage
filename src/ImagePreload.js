@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-// import { UserImage } from './UserImage';
 
 const imageStatus = {
   PENDING: 'PENDING',
@@ -13,7 +12,6 @@ const imageStyle = {
   height: 'auto',
 };
 
-/* eslint-disable */
 class ImagePreload extends PureComponent {
   static propTypes = {
     src: PropTypes.string.isRequired,
@@ -22,83 +20,46 @@ class ImagePreload extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      image: null,
       status: imageStatus.PENDING,
     };
   }
 
-  componentDidMount() {
-    const {
-      src,
-    } = this.props;
-
-    this.preloadImage(src);
-  }
-
-  onImageLoad(e) {
-    console.log('event', e);
+  handleLoad = () => {
     this.setState({
-      status: imageStatus.LOADED,
+      status: imageStatus.LOADED
     });
-  }
+  };
 
-  onImageError() {
+  handleError = () => {
     this.setState({
       status: imageStatus.FAILED,
     });
   }
 
-  preloadImage(imageSrc) {
-    const image = new Image();
-
-    image.onload = e => this.onImageLoad(e);
-    image.onerror = () => this.onImageError();
-    image.src = imageSrc;
-
-    this.setState({
-      image,
-    });
-  }
-
-  // throws CORS issue
-  preloadImage2(imageSrc) {
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-      var reader = new FileReader();
-      reader.onloadend = function() {
-        console.log('base 64: ', reader.result);
-      }
-      reader.readAsDataURL(xhr.response);
-    };
-    xhr.open('GET', imageSrc);
-    xhr.responseType = 'blob';
-    xhr.send();
-  }
+  isVisible = (status) => ({
+    visibility: status === imageStatus.LOADED ? 'visible' : 'hidden'
+  });
 
   render() {
-    const {
-      status,
-      image,
-    } = this.state;
-    console.log('image', image);
+    const { src } = this.props;
 
-    if (imageStatus.PENDING === status) {
-      return (
-        <div>
-          PENDING
-        </div>
-      );
-    } else if (imageStatus.LOADED === status) {
-      return (
-        <img
-          src={image.src}
-          style={imageStyle}
-        />
-      );
-    }
+    const { status } = this.state;
+
     return (
-      <div>
-        FAILED
+      <div className="image-wrapper">
+        {status === imageStatus.PENDING && (
+          <div className="placeholder">
+            PENDING
+          </div>
+        )}
+
+        <img
+          src={src}
+          alt="image"
+          style={{...imageStyle, ...this.isVisible(status)}}
+          onLoad={this.handleLoad}
+          onError={this.handleError}
+        />
       </div>
     );
   }
