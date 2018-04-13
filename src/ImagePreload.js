@@ -7,15 +7,17 @@ const imageStatus = {
   FAILED: 'FAILED',
 };
 
-const imageStyle = {
-  width: '150px',
-  height: 'auto',
-};
-
 class ImagePreload extends PureComponent {
   static propTypes = {
     src: PropTypes.string.isRequired,
+    initialComponent: PropTypes.func.isRequired,
+    preloadComponent: PropTypes.func.isRequired,
+    imageStyle: PropTypes.object,
   };
+
+  static defaultProps = {
+    imageStyle: null,
+  }
 
   constructor(props) {
     super(props);
@@ -26,7 +28,7 @@ class ImagePreload extends PureComponent {
 
   handleLoad = () => {
     this.setState({
-      status: imageStatus.LOADED
+      status: imageStatus.LOADED,
     });
   };
 
@@ -36,30 +38,45 @@ class ImagePreload extends PureComponent {
     });
   }
 
-  isVisible = (status) => ({
-    visibility: status === imageStatus.LOADED ? 'visible' : 'hidden'
+  isVisible = status => ({
+    display: status === imageStatus.LOADED ? '' : 'none',
   });
 
+  loadImage = () => {
+    const { src, imageStyle, ...rest } = this.props;
+    const { status } = this.state;
+
+    return (
+      <img
+        src={src}
+        alt=""
+        style={{ ...imageStyle, ...this.isVisible(status) }}
+        {...rest}
+        onLoad={this.handleLoad}
+        onError={this.handleError}
+      />
+    );
+  };
+
   render() {
-    const { src } = this.props;
+    const { initialComponent, preloadComponent } = this.props;
 
     const { status } = this.state;
 
     return (
       <div className="image-wrapper">
         {status === imageStatus.PENDING && (
-          <div className="placeholder">
-            PENDING
+          <div className="initial-component-wrapper">
+            {initialComponent()}
           </div>
         )}
 
-        <img
-          src={src}
-          alt="image"
-          style={{...imageStyle, ...this.isVisible(status)}}
-          onLoad={this.handleLoad}
-          onError={this.handleError}
-        />
+        <div
+          className="preload-component-wrapper"
+          style={{ ...this.isVisible(status) }}
+        >
+          {preloadComponent(this.loadImage)}
+        </div>
       </div>
     );
   }
